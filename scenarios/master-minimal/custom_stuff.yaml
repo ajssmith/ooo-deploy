@@ -1,0 +1,35 @@
+resource_registry:
+  OS::TripleO::Services::CinderVolume: /home/stack/tripleo-heat-templates/puppet/services/pacemaker/cinder-volume.yaml
+  OS::TripleO::Services::CinderBackup: /home/stack/tripleo-heat-templates/puppet/services/pacemaker/cinder-backup.yaml
+  #OS::TripleO::Galera::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/controller.yaml
+  #OS::TripleO::Rabbit::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/controller.yaml
+  #OS::TripleO::BlockStorage::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/cinder-storage.yaml
+  OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/compute.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/controller.yaml
+  #OS::TripleO::ObjectStorage::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/swift-storage.yaml
+  #OS::TripleO::CephStorage::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/ceph-storage.yaml
+  #OS::TripleO::Networker::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/controller.yaml
+  #OS::TripleO::Database::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/controller.yaml
+  #OS::TripleO::Messaging::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/controller.yaml
+
+
+parameter_defaults:
+  DockerNamespace: 192.168.24.1:8787/tripleoupstream
+  DockerNamespaceIsRegistry: true
+  DockerInsecureRegistryAddress: 192.168.24.1:8787
+
+  ControllerOpenstackCount: 3
+  ComputeCount: 2
+  CephStorageCount: 0
+  NetworkerCount: 0
+  ObjectStorageCount: 0
+  MessagingCount: 0
+  DatabaseCount: 0
+
+  OvercloudControllerOpenstackFlavor: oooq_control
+  OvercloudComputeFlavor: oooq_compute
+  OvercloudCephStorageFlavor: oooq_ceph
+  OvercloudNetworkerFlavor: oooq_networker
+  OvercloudSwiftStorageFlavor: oooq_swift
+  OvercloudDatabaseFlavor: oooq_galera
+  OvercloudMessagingFlavor: oooq_rabbit

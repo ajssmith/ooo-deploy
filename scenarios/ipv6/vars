@@ -1,0 +1,14 @@
+additional_repos:
+  - http://acksyn.org/files/rpms/container-experimental-repo/pacemaker-bundle.repo
+
+selinux: permissive
+build_ha_containers: False
+containerized_overcloud: True
+use_custom_roles: False
+custom_roles:
+  - ControllerOpenstack
+  - Messaging
+  - Database
+  - Networker
+  - Compute
+  - CephStorage

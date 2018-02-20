@@ -1,0 +1,14 @@
+extra_files:
+  - instance-ha.sh
+
+#tripleo_heat_templates_patches:
+#  - 531261
+
+additional_repos:
+  - http://acksyn.org/files/rpms/container-experimental-repo/pacemaker-bundle.repo
+
+selinux: permissive
+build_ha_containers: False
+containerized_overcloud: True
+use_custom_roles: True
+

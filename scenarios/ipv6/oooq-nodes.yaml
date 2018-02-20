@@ -1,0 +1,144 @@
+# Deploy a big HA OpenStack environment
+#
+# This will require (8192 * 6) == approx. 48GB for the overcloud
+# nodes, plus another 12GB for the undercloud, for a total of around
+# 60GB.
+control_memory: 12192
+compute_memory: 12192
+
+undercloud_memory: 28288
+undercloud_disk: 250
+
+# Giving the undercloud additional CPUs can greatly improve heat's
+# performance (and result in a shorter deploy time).
+# Using a total of 10 vcpus (1 is the default for overcloud nodes)
+undercloud_vcpu: 8
+
+# Since HA has more machines, doesn't we can set the cpu for controllers and
+# compute nodes to 1
+extradisks_size: 55G
+default_vcpu: 2
+flavors:
+  compute:
+    memory: '{{compute_memory|default(default_memory)}}'
+    disk: '{{compute_disk|default(default_disk)}}'
+    vcpu: '{{compute_vcpu|default(default_vcpu)}}'
+
+  control:
+    memory: '{{control_memory|default(default_memory)}}'
+    disk: '{{control_disk|default(default_disk)}}'
+    vcpu: '{{control_vcpu|default(default_vcpu)}}'
+
+  ceph:
+    memory: '{{ceph_memory|default(default_memory)}}'
+    disk: '{{ceph_disk|default(default_disk)}}'
+    vcpu: '{{ceph_vcpu|default(default_vcpu)}}'
+    extradisks: true
+
+  blockstorage:
+    memory: '{{block_memory|default(default_memory)}}'
+    disk: '{{block_disk|default(default_disk)}}'
+    vcpu: '{{block_vcpu|default(default_vcpu)}}'
+
+  objectstorage:
+    memory: '{{objectstorage_memory|default(default_memory)}}'
+    disk: '{{objectstorage_disk|default(default_disk)}}'
+    vcpu: '{{objectstorage_vcpu|default(default_vcpu)}}'
+    extradisks: true
+
+  undercloud:
+    memory: '{{undercloud_memory|default(undercloud_memory)}}'
+    disk: '{{undercloud_disk|default(undercloud_disk)}}'
+    vcpu: '{{undercloud_vcpu|default(undercloud_vcpu)}}'
+ 
+  galera:
+    memory: '{{galera_memory|default(default_memory)}}'
+    disk: '{{galera_disk|default(default_disk)}}'
+    vcpu: '{{galera_vcpu|default(default_vcpu)}}'
+
+  rabbit:
+    memory: '{{rabbit_memory|default(default_memory)}}'
+    disk: '{{rabbit_disk|default(default_disk)}}'
+    vcpu: '{{rabbit_vcpu|default(default_vcpu)}}'
+
+  remote:
+    memory: '{{remote_memory|default(default_memory)}}'
+    disk: '{{remote_disk|default(default_disk)}}'
+    vcpu: '{{remote_vcpu|default(default_vcpu)}}'
+
+  networker:
+    memory: '{{networker_memory|default(default_memory)}}'
+    disk: '{{networker_disk|default(default_disk)}}'
+    vcpu: '{{networker_vcpu|default(default_vcpu)}}'
+
+
+overcloud_nodes:
+  - name: control_0
+    flavor: control
+    virtualbmc_port: 6230
+
+  - name: control_1
+    flavor: control
+    virtualbmc_port: 6231
+
+  - name: control_2
+    flavor: control
+    virtualbmc_port: 6232
+
+  - name: compute_0
+    flavor: compute
+    virtualbmc_port: 6233
+
+  - name: compute_1
+    flavor: compute
+    virtualbmc_port: 6234
+
+  - name: galera_0
+    flavor: galera
+    virtualbmc_port: 6236
+
+  - name: galera_1
+    flavor: galera
+    virtualbmc_port: 6237
+
+  - name: galera_2
+    flavor: galera
+    virtualbmc_port: 6238
+
+  - name: rabbit_0
+    flavor: rabbit
+    virtualbmc_port: 6239
+
+  - name: rabbit_1
+    flavor: rabbit
+    virtualbmc_port: 6240
+
+  - name: rabbit_2
+    flavor: rabbit
+    virtualbmc_port: 6241
+
+  - name: ceph_0
+    flavor: ceph
+    virtualbmc_port: 6242
+
+  - name: ceph_1
+    flavor: ceph
+    virtualbmc_port: 6243
+
+  - name: ceph_2
+    flavor: ceph
+    virtualbmc_port: 6244
+
+  - name: networker_0
+    flavor: networker
+    virtualbmc_port: 6245
+
+node_count: 15
+undercloud_docker_registry_mirror: http://mrg-09.mpc.lab.eng.bos.redhat.com:5000
+
+network_isolation: true
+network_isolation_type: 'single-nic-vlans'
+topology: >-
+  --compute-scale 2
+  --control-scale 3
+  --ceph-storage-scale 3

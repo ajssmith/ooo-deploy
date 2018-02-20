@@ -1,0 +1,27 @@
+resource_registry:
+  OS::TripleO::Services::CinderVolume: /home/stack/tripleo-heat-templates/puppet/services/pacemaker/cinder-volume.yaml
+  OS::TripleO::Services::CinderBackup: /home/stack/tripleo-heat-templates/puppet/services/pacemaker/cinder-backup.yaml
+  OS::TripleO::Galera::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/controller.yaml
+  OS::TripleO::Rabbit::Net::SoftwareConfig: /home/stack/tripleo-heat-templates/network/config/single-nic-vlans/controller.yaml
+
+parameter_defaults:
+  DockerNamespace: 192.168.24.1:8787/tripleoupstream
+  DockerNamespaceIsRegistry: true
+  DockerInsecureRegistryAddress: 192.168.24.1:8787
+
+  ControllerCount: 3
+  ComputeCount: 1
+  CephStorageCount: 0
+  NetworkerCount: 0
+  ObjectStorageCount: 0
+  GaleraCount: 0
+  RabbitCount: 0
+
+  OvercloudControlFlavor: oooq_control
+  OvercloudComputeFlavor: oooq_compute
+  OvercloudCephStorageFlavor: oooq_ceph
+  OvercloudNetworkerFlavor: oooq_networker
+  OvercloudSwiftStorageFlavor: oooq_swift
+  OvercloudGaleraFlavor: oooq_galera
+  OvercloudRemoteFlavor: oooq_remote
+  OvercloudRabbitFlavor: oooq_rabbit

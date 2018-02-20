@@ -1,0 +1,230 @@
+#!/bin/bash
+set -eux
+
+if [ "$#" -ne 1 ]; then
+  echo "You need to specify the release (pike, master)"
+  exit 1
+fi
+
+RELEASE=$1
+if [ x$RELEASE == "xmaster" ]; then
+  GITBRANCH="origin/master"
+else
+  GITBRANCH="origin/stable/$RELEASE"
+fi
+
+source /home/stack/stackrc
+cd /home/stack
+
+for i in libguestfs-tools vim-enhanced emacs-nox; do 
+  if ! rpm -q $i; then sudo yum install -y $i; fi
+done
+
+function apply_patch() {
+  local CHANGE=$1
+  local REPO=$2
+  local DIR=$3
+  # patchset revision is 4th optional argument 
+  if [[ -z ${4-} ]]; then
+    REF=$(curl -s "https://review.openstack.org/changes/?q=change:$CHANGE&o=CURRENT_REVISION" |tail -n+2|jq -r '.[] | .revisions[.current_revision] | .ref')
+  else
+    REF=$(curl -s "https://review.openstack.org/changes/?q=change:$CHANGE&o=ALL_REVISIONS" |tail -n+2| jq -r '.[] | .revisions | to_entries | map(select(.value._number=='$4')) | .[0]|.value.ref')
+  fi
+  echo "Revision for $CHANGE/${4-} -> $REF"
+  pushd $DIR
+  git config --global user.email "bruce@brucington.org"
+  git config --global user.name "Bruce Brucington"
+  git fetch https://git.openstack.org/openstack/$REPO $REF && git cherry-pick --keep-redundant-commits --allow-empty FETCH_HEAD
+  popd
+}
+
+function subject_patch() {
+  local CHANGE=$1
+  SUBJECT=$(curl -s "https://review.openstack.org/changes/?q=change:$CHANGE&o=CURRENT_REVISION" |tail -n+2|jq -r '.[] | .subject')
+  if [[ $? -eq 0 ]]; then
+    echo $SUBJECT
+  else
+    echo ''
+  fi
+}
+  
+function override_ha_container_packages() {
+  local cmd
+  local user
+  local cont
+  local hash
+  BUILD_IMGS="rabbitmq mariadb redis haproxy"
+  for bi in $BUILD_IMGS; do
+    echo "overriding containers for $bi"
+    DOCKER_IMGS=$(sudo docker images | grep -F 192.168.24.1:8787 | grep $bi | awk '{print $1":"$2}')
+    for i in $DOCKER_IMGS ; do
+      echo "processing $bi - image $i"
+      cmd=$(docker inspect --format '{{'{{'}}json .Config.Cmd{{'}}'}}' $i)
+      user=$(docker inspect --format '{{'{{'}}.Config.User{{'}}'}}' $i)
+      cont=$(docker ps -a -q -f name="prepare-$bi")
+      if [ -n "$cont" ]; then docker rm -f "$cont"; fi
+      {% for repo in additional_repos|default([]) %}
+docker run --name="prepare-$bi" -u root --net=host $i /bin/bash -c "curl -sL {{ repo }} -o /etc/yum.repos.d/custom-repo-{{ loop.index }}.repo && yum update -y pacemaker\* resource-agents && yum clean all"
+      {% endfor %}
+
+      hash=$(docker commit --change "CMD $cmd" --change "USER \"$user\"" "prepare-$bi")
+      docker tag $hash $i
+      docker push $i
+    done
+  done
+}
+
+function patch_tripleo_heat_templates() {
+  if [ -d tripleo-heat-templates ]; then rm -rf tripleo-heat-templates; fi
+  git clone https://github.com/openstack/tripleo-heat-templates
+  pushd tripleo-heat-templates
+  git checkout $GITBRANCH -b "local-$RELEASE"
+  popd
+  {% for patch in tripleo_heat_templates_patches|default([]) %}
+apply_patch {{ patch }} tripleo-heat-templates tripleo-heat-templates
+  {% endfor %}
+
+}
+
+function patch_puppet_tripleo() {
+  if [ -d tripleo ]; then rm -rf tripleo; fi
+  git clone https://github.com/openstack/puppet-tripleo tripleo
+  pushd tripleo
+  git checkout $GITBRANCH -b "local-$RELEASE"
+  popd
+  {% for patch in puppet_tripleo_patches|default([]) %}
+apply_patch {{ patch }} puppet-tripleo tripleo
+  {% endfor %}
+
+} 
+
+function patch_puppet_pacemaker() {
+  if [ -d pacemaker ]; then rm -rf pacemaker; fi
+  git clone https://github.com/openstack/puppet-pacemaker pacemaker
+  pushd pacemaker
+  # FIXME: this might need some love later
+  git checkout origin/master -b "local-master"
+  popd
+  {% for patch in puppet_pacemaker_patches|default([]) %}
+apply_patch {{ patch }} puppet-pacemaker pacemaker
+  {% endfor %}
+
+}
+
+function patch_tripleo_common() {
+  if [ -d tripleo-common ]; then sudo rm -rf tripleo-common; fi
+  git clone https://github.com/openstack/tripleo-common
+  pushd tripleo-common
+  git checkout $GITBRANCH -b "local-$RELEASE"
+  popd
+  {% for patch in tripleo_common_patches|default([]) %}
+apply_patch {{ patch }} tripleo-common tripleo-common
+  {% endfor %}
+  pushd tripleo-common
+  sudo python setup.py install > install-log.txt 2>&1
+  popd
+  sudo mistral-db-manage  populate
+  sudo systemctl restart openstack-mistral-api.service
+  sudo systemctl restart openstack-mistral-engine.service
+  sudo systemctl restart openstack-mistral-executor.service
+  sleep 5
+  set +e
+  for workbook in $(mistral workbook-list | grep tripleo | cut -f 2 -d ' '); do
+      mistral workbook-delete $workbook
+  done
+  for workflow in $(mistral workflow-list | grep tripleo | cut -f 2 -d ' '); do
+      mistral workflow-delete $workflow
+  done
+  set -e
+  for workbook in $(ls /usr/share/tripleo-common/workbooks/*); do
+      mistral workbook-create $workbook
+  done
+}
+
+virt-customize -a overcloud-full.qcow2 \
+  --root-password password:redhat \
+  --run-command 'sed -i "s/SELINUX=.*/SELINUX={{ selinux|default('enforcing') }}/" /etc/selinux/config' \
+  {% for repo in additional_repos|default([]) %}
+  --run-command 'yum-config-manager --add-repo {{ repo }} && yum clean all' \
+  {% endfor %}
+  --run-command 'yum install -y vim emacs-nox strace' \
+  --run-command 'yum update -y' \
+  --run-command 'echo "# MEH" > /etc/sysconfig/network-scripts/ifcfg-eth1' \
+  --run-command 'echo "# MEH" > /etc/sysconfig/network-scripts/ifcfg-eth2' \
+  --run-command 'echo "# MEH" > /etc/sysconfig/network-scripts/ifcfg-eth3' \
+  --run-command 'echo "# MEH" > /etc/sysconfig/network-scripts/ifcfg-eth4' \
+  --run-command 'echo "# MEH" > /etc/sysconfig/network-scripts/ifcfg-eth5' \
+  --run-command 'echo "# MEH" > /etc/sysconfig/network-scripts/ifcfg-eth6' \
+  --selinux-relabel \
+  --delete /usr/share/openstack-puppet/modules/tripleo
+
+patch_tripleo_heat_templates
+patch_puppet_tripleo
+#patch_puppet_pacemaker
+
+{% if tripleo_common_from_git|default(False) %}
+patch_tripleo_common
+{% endif %}
+
+virt-copy-in -a overcloud-full.qcow2 tripleo /usr/share/openstack-puppet/modules
+virt-copy-in -a overcloud-full.qcow2 /home/stack/.bashrc /root/
+
+openstack overcloud image upload --image-path . --update-existing
+
+# download the images we don't build
+
+{% if containerized_overcloud|default(False) %}
+rc=1
+while [ $rc != 0 ]; do
+  ./overcloud-prep-containers.sh 2>&1 > /home/stack/prep_containers.log
+  rc=$?
+done
+{% else %}
+# rc=1
+# while [ $rc != 0 ]; do
+#   ./overcloud-prep-containers.sh 2>&1 > /home/stack/prep_containers.log
+#   rc=$?
+# done
+{% endif %}
+
+
+{% if build_ha_containers|default(False) %}
+override_ha_container_packages
+{% else %}
+#override_ha_container_packages
+{% endif %}
+
+{% if use_custom_roles|default(true) %}
+# Custom provided roles were used
+{% else %}
+if [ $RELEASE == 'master' -o $RELEASE == 'pike' ]; then
+  openstack overcloud roles generate --roles-path /home/stack/tripleo-heat-templates/roles  {% for role in custom_roles -%}{{ role }} {% endfor %} -o /home/stack/custom_roles.yaml
+fi
+{% endif %}
+
+
+set +e
+perl -pi -e 's,/usr/share/openstack-tripleo-heat-templates,/home/stack/tripleo-heat-templates,g' /home/stack/overcloud-deploy.sh
+
+./overcloud-deploy.sh --no-cleanup -e ~/tripleo-heat-templates/environments/config-debug.yaml \
+	-e ~/tripleo-heat-templates/environments/disable-telemetry.yaml \
+{% if containerized_overcloud|default(False) %}
+	-e ~/tripleo-heat-templates/environments/docker.yaml \
+	-e ~/tripleo-heat-templates/environments/docker-ha.yaml \
+	-e /home/stack/containers-default-parameters.yaml \
+{% endif %}
+	-e ~/custom_stuff.yaml \
+        {% for env in extra_env_params|default([]) %}
+        {{ env }} \
+        {% endfor %}
+	-r ~/custom_roles.yaml
+
+#	-e /home/stack/fencing_config.yaml \
+    
+tripleo-ansible-inventory --static-inventory inventory
+set -e
+
+# prepare tests for overcloud
+if [ -d tripleo-ci ]; then rm -rf tripleo-ci; fi
+git clone https://github.com/openstack-infra/tripleo-ci tripleo-ci || /bin/true
+./tripleo-ci/scripts/tripleo.sh --overcloud-pingtest --skip-pingtest-cleanup

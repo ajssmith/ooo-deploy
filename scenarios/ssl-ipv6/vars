@@ -1,0 +1,18 @@
+tripleo_heat_templates_patches:
+  - 527694
+  - 539498
+
+puppet_tripleo_patches:
+  - 527398
+#   - 507852
+
+# additional_repos:
+#   - http://acksyn.org/files/rpms/container-experimental-repo/pacemaker-bundle.repo
+
+extra_env_params: 
+  - -e ~/tripleo-heat-templates/environments/services/haproxy-public-tls-certmonger.yaml
+  - -e ~/tripleo-heat-templates/environments/enable-internal-tls.yaml
+  - -e ~/tripleo-heat-templates/environments/tls-everywhere-endpoints-dns.yaml
+
+selinux: permissive
+containerized_overcloud: True

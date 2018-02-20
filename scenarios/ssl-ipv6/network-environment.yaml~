@@ -1,0 +1,48 @@
+{
+    "parameter_defaults": {
+        "ControlPlaneDefaultRoute": "192.168.24.1", 
+        "ControlPlaneSubnetCidr": "24", 
+        "DnsServers": [
+            false
+        ], 
+        "EC2MetadataIp": "192.168.24.1", 
+        "ExternalAllocationPools": [
+            {
+                "end": "2001:db8:fd00:1000:ffff:ffff:ffff:fffe", 
+                "start": "2001:db8:fd00:1000::10"
+            }
+        ], 
+        "ExternalInterfaceDefaultRoute": "2001:db8:fd00:1000::1", 
+        "ExternalNetCidr": "2001:db8:fd00:1000::/64", 
+        "InternalApiAllocationPools": [
+            {
+                "end": "fd00:fd00:fd00:2000:ffff:ffff:ffff:fffe", 
+                "start": "fd00:fd00:fd00:2000::10"
+            }
+        ], 
+        "InternalApiNetCidr": "fd00:fd00:fd00:2000::/64", 
+        "NeutronExternalNetworkBridge": "''", 
+        "StorageAllocationPools": [
+            {
+                "end": "fd00:fd00:fd00:3000:ffff:ffff:ffff:fffe", 
+                "start": "fd00:fd00:fd00:3000::10"
+            }
+        ], 
+        "StorageMgmtAllocationPools": [
+            {
+                "end": "fd00:fd00:fd00:4000:ffff:ffff:ffff:fffe", 
+                "start": "fd00:fd00:fd00:4000::10"
+            }
+        ], 
+        "StorageMgmtNetCidr": "fd00:fd00:fd00:4000::/64", 
+        "StorageNetCidr": "fd00:fd00:fd00:3000::/64", 
+        "TenantAllocationPools": [
+            {
+                "end": "172.16.0.250", 
+                "start": "172.16.0.10"
+            }
+        ], 
+        "TenantNetCidr": "172.16.0.0/24"
+    }
+}
+

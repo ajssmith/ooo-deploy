@@ -1,0 +1,18 @@
+tripleo_heat_templates_patches:
+  - 507963
+
+puppet_tripleo_patches:
+  - 522406
+
+#additional_repos:
+#  - http://acksyn.org/files/rpms/container-experimental-repo/pacemaker-bundle.repo
+
+
+selinux: permissive
+build_ha_containers: False
+tripleo_common_from_git: False
+containerized_overcloud: true
+use_custom_roles: False
+custom_roles:
+  - Controller
+  - Compute

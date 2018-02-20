@@ -1,0 +1,153 @@
+- name: Controller # the 'primary' role goes first
+  description: |
+    Controller role that has all the controler services loaded and handles
+    Database, Messaging and Network functions.
+  tags:
+    - primary
+    - controller
+  networks:
+    - External
+    - InternalApi
+    - Storage
+    - StorageMgmt
+    - Tenant
+  CountDefault: 1
+  HostnameFormatDefault: '%stackname%-controller-%index%'
+  ServicesDefault:
+    - OS::TripleO::Services::Pacemaker
+    - OS::TripleO::Services::Ntp
+    - OS::TripleO::Services::Docker
+    - OS::TripleO::Services::MySQLClient
+    - OS::TripleO::Services::Redis
+    - OS::TripleO::Services::HAproxy
+    - OS::TripleO::Services::Keystone
+    - OS::TripleO::Services::GlanceApi
+    - OS::TripleO::Services::CinderApi
+    - OS::TripleO::Services::CinderVolume
+    - OS::TripleO::Services::CinderBackup
+    - OS::TripleO::Services::CinderScheduler
+    - OS::TripleO::Services::HeatApi
+    - OS::TripleO::Services::HeatApiCfn
+    #- OS::TripleO::Services::HeatApiCloudwatch
+    - OS::TripleO::Services::HeatEngine
+    - OS::TripleO::Services::Iscsid
+    - OS::TripleO::Services::Memcached
+    - OS::TripleO::Services::Multipathd
+    - OS::TripleO::Services::NeutronBgpVpnApi
+    - OS::TripleO::Services::NeutronDhcpAgent
+    - OS::TripleO::Services::NeutronL2gwApi
+    - OS::TripleO::Services::NeutronL3Agent
+    - OS::TripleO::Services::NeutronMetadataAgent
+    - OS::TripleO::Services::NeutronApi
+    - OS::TripleO::Services::NeutronCorePlugin
+    - OS::TripleO::Services::NeutronOvsAgent
+    - OS::TripleO::Services::NeutronL2gwAgent
+    - OS::TripleO::Services::NovaConductor
+    - OS::TripleO::Services::NovaApi
+    - OS::TripleO::Services::NovaPlacement
+    - OS::TripleO::Services::NovaMetadata
+    - OS::TripleO::Services::NovaScheduler
+    - OS::TripleO::Services::NovaConsoleauth
+    - OS::TripleO::Services::NovaVncProxy
+    # - OS::TripleO::Services::Ec2Api
+    - OS::TripleO::Services::SwiftProxy
+    - OS::TripleO::Services::ExternalSwiftProxy
+    - OS::TripleO::Services::SwiftStorage
+    - OS::TripleO::Services::SwiftRingBuilder
+    - OS::TripleO::Services::Snmp
+    - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Securetty
+    - OS::TripleO::Services::Timezone
+    # - OS::TripleO::Services::CeilometerAgentCentral
+    # - OS::TripleO::Services::CeilometerAgentNotification
+    # - OS::TripleO::Services::Horizon
+    # - OS::TripleO::Services::GnocchiApi
+    # - OS::TripleO::Services::GnocchiMetricd
+    # - OS::TripleO::Services::GnocchiStatsd
+    # - OS::TripleO::Services::ManilaApi
+    # - OS::TripleO::Services::ManilaScheduler
+    # - OS::TripleO::Services::ManilaBackendGeneric
+    # - OS::TripleO::Services::ManilaBackendNetapp
+    # - OS::TripleO::Services::ManilaBackendCephFs
+    # - OS::TripleO::Services::ManilaShare
+    # - OS::TripleO::Services::AodhApi
+    # - OS::TripleO::Services::AodhEvaluator
+    # - OS::TripleO::Services::AodhNotifier
+    # - OS::TripleO::Services::AodhListener
+    # - OS::TripleO::Services::SaharaApi
+    # - OS::TripleO::Services::SaharaEngine
+    # - OS::TripleO::Services::IronicApi
+    # - OS::TripleO::Services::IronicConductor
+    # - OS::TripleO::Services::OpenDaylightApi
+    # - OS::TripleO::Services::OpenDaylightOvs
+    # - OS::TripleO::Services::SensuClient
+    # - OS::TripleO::Services::FluentdClient
+    # - OS::TripleO::Services::Collectd
+    # - OS::TripleO::Services::BarbicanApi
+    # - OS::TripleO::Services::PankoApi
+    # - OS::TripleO::Services::Tacker
+    # - OS::TripleO::Services::Zaqar
+    # - OS::TripleO::Services::OVNDBs
+    # - OS::TripleO::Services::NeutronML2FujitsuCfab
+    # - OS::TripleO::Services::NeutronML2FujitsuFossw
+    # - OS::TripleO::Services::CinderHPELeftHandISCSI
+    # - OS::TripleO::Services::Etcd
+    # - OS::TripleO::Services::AuditD
+    # - OS::TripleO::Services::OctaviaApi
+    # - OS::TripleO::Services::OctaviaHealthManager
+    # - OS::TripleO::Services::OctaviaHousekeeping
+    # - OS::TripleO::Services::OctaviaWorker
+    # - OS::TripleO::Services::Vpp
+    # - OS::TripleO::Services::NeutronVppAgent
+    - OS::TripleO::Services::MySQL
+    - OS::TripleO::Services::Clustercheck
+    - OS::TripleO::Services::RabbitMQ
+    - OS::TripleO::Services::NovaIronic
+    - OS::TripleO::Services::TripleoPackages
+    - OS::TripleO::Services::TripleoFirewall
+
+- name: Compute
+  description: |
+    Basic Comput Node role
+  CountDefault: 1
+  networks:
+    - InternalApi
+    - Tenant
+    - Storage
+  HostnameFormatDefault: '%stackname%-novacompute-%index%'
+  disable_upgrade_deployment: True
+  deprecated_param_scheduler_hints: 'NovaComputeSchedulerHints'
+  ServicesDefault:
+    - OS::TripleO::Services::CACerts
+    - OS::TripleO::Services::CertmongerUser
+    #- OS::TripleO::Services::CephClient
+    - OS::TripleO::Services::CephExternal
+    - OS::TripleO::Services::Iscsid
+    - OS::TripleO::Services::Timezone
+    - OS::TripleO::Services::Ntp
+    - OS::TripleO::Services::Snmp
+    - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Securetty
+    - OS::TripleO::Services::NovaCompute
+    - OS::TripleO::Services::NovaLibvirt
+    - OS::TripleO::Services::Kernel
+    - OS::TripleO::Services::ComputeNeutronCorePlugin
+    - OS::TripleO::Services::ComputeNeutronOvsAgent
+    - OS::TripleO::Services::ComputeCeilometerAgent
+    - OS::TripleO::Services::ComputeNeutronL3Agent
+    - OS::TripleO::Services::ComputeNeutronMetadataAgent
+    - OS::TripleO::Services::TripleoPackages
+    - OS::TripleO::Services::TripleoFirewall
+    #- OS::TripleO::Services::NeutronSriovAgent
+    #- OS::TripleO::Services::OpenDaylightOvs
+    #- OS::TripleO::Services::SensuClient
+    #- OS::TripleO::Services::FluentdClient
+    #- OS::TripleO::Services::AuditD
+    #- OS::TripleO::Services::Collectd
+    #- OS::TripleO::Services::Vpp
+    #- OS::TripleO::Services::NeutronVppAgent
+    #- OS::TripleO::Services::MySQLClient
+    - OS::TripleO::Services::Docker
+    - OS::TripleO::Services::PacemakerRemote
+    - OS::TripleO::Services::ComputeInstanceHA
+

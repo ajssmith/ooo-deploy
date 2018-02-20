@@ -1,0 +1,31 @@
+# .bashrc
+
+# User specific aliases and functions
+
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+ospgrep() {
+  echo "$*"
+  grep -E "\s\b(E[rR]{2}:?|alert|Traceback|TRACE|crit|fatal|HANDLER|TASK|PLAY|Unexpected|FAIL|[Ff]ail|denied|non-zero|[Tt]ime[d\s]?out|UNCAUGHT|EXCEPTION|Unknown|[Aa]ssertion|inuse)" $*
+}
+
+sprunge() {
+  if [ -n "$1" ]; then
+	curl -F 'sprunge=<-' "http://sprunge.us" <"$1"
+  else
+	curl -F 'sprunge=<-' "http://sprunge.us"
+  fi
+}
+
+alias ANSIBLE_WTF='python -c '\''import sys;print sys.stdin.read().decode("unicode_escape")'\'' | sed '\''s/\\u001b/\x1b/g'\'''
+alias RABBIT='docker exec -it $(sudo docker ps -f name=rabbitmq-bundle -q) /bin/bash -c "export TERM=xterm; exec bash"'
+alias GALERA='docker exec -it $(sudo docker ps -f name=galera-bundle -q) /bin/bash -c "export TERM=xterm; exec bash"'
+alias REDIS='docker exec -it $(sudo docker ps -f name=redis-bundle -q) /bin/bash -c "export TERM=xterm; exec bash"'
+alias HEAT_FAIL='grep -i status_code /var/lib/heat-config/deployed/*'
