@@ -15,7 +15,7 @@ DATE=$(date +%Y%m%d-%H%M)
 SCALEBOX=$1
 RELEASE=$2
 RESULTRCPT="ansmith@redhat.com"
-ROOTDIR="/home/asmith/ci/messaging/"
+ROOTDIR="/home/osdeploy/ooo-deploy/"
 SCENARIODIR="$ROOTDIR/scenarios/$SCENARIO"
 BASEDIR="$ROOTDIR/run/$RELEASE-$SCALEBOX"
 LOGDIR="$ROOTDIR/logs/$RELEASE-$SCALEBOX"
@@ -86,7 +86,7 @@ cat > "$BASEDIR/ansible.cfg" <<EOF
 ssh_args = -F $BASEDIR/ssh.config.ansible
 EOF
 
-cat > "$BASEDIR/asmith_inventory" <<EOF
+cat > "$BASEDIR/ooo_inventory" <<EOF
 undercloud
 EOF
 
@@ -152,5 +152,5 @@ EOF
 ooq_install_undercloud
 prepare_playbooks
 export ANSIBLE_CONFIG="$BASEDIR/ansible.cfg"
-ansible-playbook  -i $BASEDIR/asmith_inventory $BASEDIR/playbook
+ansible-playbook  -i $BASEDIR/ooo_inventory $BASEDIR/playbook
 
