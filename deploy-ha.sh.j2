@@ -7,7 +7,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 RELEASE=$1
-if [ x$RELEASE == "xmaster" ]; then
+if [ x$RELEASE == "xmaster" -o x$RELEASE == "xmaster-tripleo-ci" ]; then
   GITBRANCH="origin/master"
 else
   GITBRANCH="origin/stable/$RELEASE"
@@ -197,7 +197,7 @@ override_ha_container_packages
 {% if use_custom_roles|default(true) %}
 # Custom provided roles were used
 {% else %}
-if [ $RELEASE == 'master' -o $RELEASE == 'pike' ]; then
+if [ $RELEASE == 'queens' -o $RELEASE == 'master' -o $RELEASE == 'pike' -o $RELEASE == 'master-tripleo-ci' ]; then
   openstack overcloud roles generate --roles-path /home/stack/tripleo-heat-templates/roles  {% for role in custom_roles -%}{{ role }} {% endfor %} -o /home/stack/custom_roles.yaml
 fi
 {% endif %}
