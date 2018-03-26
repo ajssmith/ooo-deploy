@@ -1,6 +1,7 @@
 #!/bin/bash
 set -eux
 
+# comment
 if [ "$#" -ne 3 ]; then
     echo "Pass host, release and type of deploy as a parameter."
     echo "where release [pike,master]" 2>&1
