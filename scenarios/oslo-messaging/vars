@@ -1,8 +1,8 @@
 tripleo_heat_templates_patches:
   - 507963
 
-puppet_tripleo_patches:
-  - 522406
+#puppet_tripleo_patches:
+#  - 510684
 
 #additional_repos:
 #  - http://acksyn.org/files/rpms/container-experimental-repo/pacemaker-bundle.repo

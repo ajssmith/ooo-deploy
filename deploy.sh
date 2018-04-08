@@ -16,7 +16,7 @@ DATE=$(date +%Y%m%d-%H%M)
 SCALEBOX=$1
 RELEASE=$2
 RESULTRCPT="ansmith@redhat.com"
-ROOTDIR="/home/osdeploy/ooo-deploy/"
+ROOTDIR="/home/stack/ooo-deploy/"
 SCENARIODIR="$ROOTDIR/scenarios/$SCENARIO"
 BASEDIR="$ROOTDIR/run/$RELEASE-$SCALEBOX"
 LOGDIR="$ROOTDIR/logs/$RELEASE-$SCALEBOX"
@@ -139,13 +139,13 @@ $VARS
         src: $ROOTDIR/templates/bashrc
         dest: /home/stack/.bashrc
         mode: 0755
-    - name: Run deploy-ha
-      shell: >
-        ./deploy-ha.sh $RELEASE 2>&1 > /home/stack/deploy_ha.log
-    - name: Run extra post scripts
-      shell: >
-        "{{ item }} 2>&1 > /home/stack/{{ item.log }}"
-      with_items: "{{ extra_files|default([]) }}"
+    #- name: Run deploy-ha
+    #  shell: >
+    #    ./deploy-ha.sh $RELEASE 2>&1 > /home/stack/deploy_ha.log
+    #- name: Run extra post scripts
+    #  shell: >
+    #    "{{ item }} 2>&1 > /home/stack/{{ item.log }}"
+    #  with_items: "{{ extra_files|default([]) }}"
       
 EOF
 } # prepare_playbooks
